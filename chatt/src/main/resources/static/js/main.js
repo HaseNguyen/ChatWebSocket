@@ -10,6 +10,7 @@ var connectingElement = document.querySelector('.connecting');
 
 var stompClient = null;
 var username = null;
+var room = null;
 
 var colors = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
@@ -18,6 +19,7 @@ var colors = [
 
 function connect(event) {
     username = document.querySelector('#name').value.trim();
+    room = document.querySelector('#room').value.trim();
 
     if(username) {
         usernamePage.classList.add('hidden');
@@ -34,12 +36,12 @@ function connect(event) {
 
 function onConnected() {
     // Subscribe to the Public Topic
-    stompClient.subscribe('/topic/public', onMessageReceived);
+    stompClient.subscribe('/topic/public/' + room, onMessageReceived);
 
     // Tell your username to the server
-    stompClient.send("/app/chat.addUser",
+    stompClient.send("/app/chat.addUser/" + room,
         {},
-        JSON.stringify({sender: username, type: 'JOIN'})
+        JSON.stringify({sender: username, type: 'JOIN', room: room}, room)
     )
 
     connectingElement.classList.add('hidden');
@@ -62,7 +64,7 @@ function sendMessage(event) {
             type: 'CHAT'
         };
 
-        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+        stompClient.send("/app/chat.sendMessage/" + room, {}, JSON.stringify(chatMessage), room);
         messageInput.value = '';
     }
     event.preventDefault();
